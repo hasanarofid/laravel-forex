@@ -18,4 +18,9 @@ Route::get('/', [App\Http\Controllers\BerandaController::class, 'index'])->name(
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+Route::prefix('admin')->middleware('auth')->name('admin.')->group(function () {
+    Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+    Route::get('/datatable', [App\Http\Controllers\AdminController::class, 'getDatatable'])->name('datatable');
+    Route::post('/fetch-ratios', [App\Http\Controllers\AdminController::class, 'fetchAndSaveRatios'])->name('fetch-ratios');
+});

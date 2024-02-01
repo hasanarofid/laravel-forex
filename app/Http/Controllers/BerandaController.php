@@ -11,20 +11,22 @@ class BerandaController extends Controller
 {
     public function index(Request $request)
     {
+       
         $filter = $request->input('filter');
         // dd($filter);
         if(!empty($filter)){
-            $ratios = Ratio::where('currency',$filter)->orderBy('created_at')->get();
+            $ratios = Ratio::where('currency',$filter)->latest('updated_at')->get();
             $cur = $filter;
         }else{
-            $ratios = Ratio::where('currency','AUDJPY')->orderBy('created_at')->get();
+            $ratios = Ratio::where('currency','AUDJPY')->latest('updated_at')->get();
             $cur = 'AUDJPY';
         }
+        $lastUpdate = $ratios->isEmpty() ? null : $ratios->first()->updated_at->diffForHumans();
 
         $currency = Ratio::select('currency')->groupBy('currency')->orderBy('currency')->get();
      
               // Mengirimkan data ke view 'beranda.home' bersama dengan compact
-              return view('beranda.home', compact('currency','ratios','cur'));
+              return view('beranda.home', compact('currency','ratios','cur','lastUpdate'));
     }
 
     public function fetchAndSaveRatios()

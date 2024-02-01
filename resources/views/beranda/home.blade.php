@@ -142,6 +142,13 @@
               <div class="col-md-4" style="background-color: blanchedalmond">
                 <div class="group titled" id="thePairs" style="display: block;">
                   <div class="title">
+                    <span>Last Update</span>
+                    <div>
+                      <p>{{ $lastUpdate }}</p>
+                    </div>
+                </div>
+
+                  <div class="title">
                       <span>Currency pairs</span>
                   </div>
                   <div class="tool-button-group" data-api-key="filter">
