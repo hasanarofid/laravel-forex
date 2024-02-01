@@ -9,22 +9,22 @@ use App\Models\Ratio;
 
 class BerandaController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $ratios = Ratio::where('currency','AUDJPY')->orderBy('created_at')->get();
-              // Mengambil data yang diperlukan untuk chart
-              $labels = [];
-              $buyData = [];
-              $sellData = [];
-      
-              foreach ($ratios as $ratio) {
-                  $labels[] = $ratio->company;
-                  $buyData[] = $ratio->buy;
-                  $sellData[] = $ratio->sell;
-              }
-      
+        $filter = $request->input('filter');
+        // dd($filter);
+        if(!empty($filter)){
+            $ratios = Ratio::where('currency',$filter)->orderBy('created_at')->get();
+            $cur = $filter;
+        }else{
+            $ratios = Ratio::where('currency','AUDJPY')->orderBy('created_at')->get();
+            $cur = 'AUDJPY';
+        }
+
+        $currency = Ratio::select('currency')->groupBy('currency')->orderBy('currency')->get();
+     
               // Mengirimkan data ke view 'beranda.home' bersama dengan compact
-              return view('beranda.home', compact('labels', 'buyData', 'sellData'));
+              return view('beranda.home', compact('currency','ratios','cur'));
     }
 
     public function fetchAndSaveRatios()
