@@ -114,7 +114,7 @@ $(document).ready(function() {
             { data: 'company', name: 'company' },
             { data: 'buy', name: 'buy' },
             { data: 'sell', name: 'sell' },
-            { data: 'updated_at', name: 'updated_at' }
+            { data: 'last_update22', name: 'last_update22' }
         ]
     });
 });

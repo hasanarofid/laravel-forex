@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use DataTables;
 use App\Models\Ratio;
+use App\Models\TransactionApi;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
@@ -35,11 +36,13 @@ class AdminController extends Controller
     public function getDatatable(Request $request)
     {
         if ($request->ajax()) {
-            $data = Ratio::orderBy('id', 'DESC')->get();
+            $query = Ratio::select('ratios.*','transaction_api.last_update')
+                ->join('transaction_api', 'transaction_api.id', '=', 'ratios.transaction_api_id')
+                ->orderBy('transaction_api.last_update', 'DESC');
     
-            return Datatables::of($data)
-                ->addColumn('updated_at', function ($row) {
-                    return Carbon::parse($row->updated_at)->format('d-M-Y H:i:s');
+            return Datatables::of($query)
+                ->addColumn('last_update22', function ($row) {
+                    return Carbon::parse($row->last_update)->format('d-M-Y H:i:s');
                 })
                 ->make(true);
         }
@@ -49,17 +52,37 @@ class AdminController extends Controller
         {
             $response = Http::get('https://c.fxssi.com/api/current-ratios');
 
+            $data = $response->json();
+            // dd($data);
+
+            $currentDate = Carbon::now()->format('Ymd');
+            $countTransactions = TransactionApi::whereDate('last_update', Carbon::today())->count();
+            $sequenceNumber = str_pad($countTransactions + 1, 4, '0', STR_PAD_LEFT);
+            $generateNo = 'API' . $currentDate . $sequenceNumber;
+            $transactionApi = new TransactionApi();
+            $transactionApi->generate_no = $generateNo;
+            $transactionApi->last_update = Carbon::now();
+            $transactionApi->save();
+
             if ($response->successful()) {
                 $data = $response->json();
-                
+                $transactionApiId = $transactionApi->id;
                 foreach ($data['pairs'] as $currency => $pair) {
                     foreach ($pair as $company => $value) {
+                        // Hitung nilai sell
+                        
+                        if ($value > 100.00) {
+                            // Ambil dua digit pertama sebelum titik (.)
+                            $value = substr($value, 0, 2) . substr($value, strpos($value, '.'));
+                        }
+                
                         // Hitung nilai sell
                         $sell = 100 - (float)$value;
                         
                         // Simpan data ke dalam tabel ratios
                         Ratio::create([
                             'currency' => $currency,
+                            'transaction_api_id' => $transactionApiId,
                             'company' => $company,
                             'buy' => (float)$value,
                             'sell' => $sell,

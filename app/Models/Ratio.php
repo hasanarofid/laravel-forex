@@ -9,6 +9,6 @@ class Ratio extends Model
 {
     use HasFactory;
     
-    protected $fillable = ['currency', 'company', 'buy','sell'];
+    protected $fillable = ['transaction_api_id','currency', 'company', 'buy','sell'];
 }
 

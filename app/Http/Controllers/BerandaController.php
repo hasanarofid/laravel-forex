@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use App\Models\Ratio;
-
+use App\Models\TransactionApi;
+use Carbon\Carbon;
 
 class BerandaController extends Controller
 {
@@ -14,16 +15,17 @@ class BerandaController extends Controller
        
         $filter = $request->input('filter');
         // dd($filter);
+        $lastTransactionApi = TransactionApi::orderBy('last_update', 'desc')->first();
         if(!empty($filter)){
-            $ratios = Ratio::where('currency',$filter)->latest('updated_at')->get();
+            $ratios = Ratio::where('currency',$filter)
+            ->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
             $cur = $filter;
         }else{
-            $ratios = Ratio::where('currency','AUDJPY')->latest('updated_at')->get();
+            $ratios = Ratio::where('currency','AUDJPY')->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
             $cur = 'AUDJPY';
         }
-        $lastUpdate = $ratios->isEmpty() ? null : $ratios->first()->updated_at->diffForHumans();
-
-        $currency = Ratio::select('currency')->groupBy('currency')->orderBy('currency')->get();
+        $lastUpdate = ($lastTransactionApi) ? Carbon::parse($lastTransactionApi->last_update)->diffForHumans() : null;
+                $currency = Ratio::select('currency')->groupBy('currency')->orderBy('currency')->get();
      
               // Mengirimkan data ke view 'beranda.home' bersama dengan compact
               return view('beranda.home', compact('currency','ratios','cur','lastUpdate'));
