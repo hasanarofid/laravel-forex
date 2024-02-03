@@ -14,21 +14,45 @@ class BerandaController extends Controller
     {
        
         $filter = $request->input('filter');
+        $type = $request->input('type');
         // dd($filter);
         $lastTransactionApi = TransactionApi::orderBy('last_update', 'desc')->first();
-        if(!empty($filter)){
+        if(!empty($filter) || !empty($type) ){
             $ratios = Ratio::where('currency',$filter)
+            ->where('type',$type)
             ->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
             $cur = $filter;
         }else{
-            $ratios = Ratio::where('currency','AUDJPY')->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
+            if(!empty($lastTransactionApi)){
+                $ratios = Ratio::where('currency','AUDJPY')
+                ->where('type','Pairs')->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
+            }else{
+                $ratios = Ratio::where('currency','AUDJPY')
+                ->where('type','Pairs')->latest('updated_at')->get();
+            }
             $cur = 'AUDJPY';
         }
         $lastUpdate = ($lastTransactionApi) ? Carbon::parse($lastTransactionApi->last_update)->diffForHumans() : null;
-                $currency = Ratio::select('currency')->groupBy('currency')->orderBy('currency')->get();
+        $currency = Ratio::select('currency')->where('type','Pairs')->groupBy('currency')->orderBy('currency')->get();
+        $brokers = Ratio::select('currency')->where('type','Brokers')->groupBy('currency')->orderBy('currency')->get();
+
+        $grouping = [
+            'Pairs'=>'Pairs',
+            'Brokers'=>'Brokers',
+        ];
+        
+        $default = !empty($type)  ? $type  : 'Pairs';
      
               // Mengirimkan data ke view 'beranda.home' bersama dengan compact
-              return view('beranda.home', compact('currency','ratios','cur','lastUpdate'));
+              return view('beranda.home',
+               compact('currency',
+               'ratios','cur',
+               'lastUpdate',
+                'brokers',
+                'grouping',
+                'default'
+
+            ));
     }
 
     public function fetchAndSaveRatios()

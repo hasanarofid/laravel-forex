@@ -82,6 +82,7 @@ table.dataTable tbody tr:hover {
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Type</th>
                                 <th>Currency</th>
                                 <th>Company</th>
                                 <th>Buy</th>
@@ -110,6 +111,7 @@ $(document).ready(function() {
         ajax: '{{ route("admin.datatable") }}',
         columns: [
             { data: 'id', name: 'id' },
+            { data: 'type', name: 'type' },
             { data: 'currency', name: 'currency' },
             { data: 'company', name: 'company' },
             { data: 'buy', name: 'buy' },

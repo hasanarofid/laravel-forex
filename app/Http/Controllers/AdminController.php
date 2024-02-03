@@ -52,7 +52,7 @@ class AdminController extends Controller
         {
             $response = Http::get('https://c.fxssi.com/api/current-ratios');
 
-            $data = $response->json();
+            // $data = $response->json();
             // dd($data);
 
             $currentDate = Carbon::now()->format('Ymd');
@@ -67,6 +67,11 @@ class AdminController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 $transactionApiId = $transactionApi->id;
+                
+
+
+
+                // save pairs
                 foreach ($data['pairs'] as $currency => $pair) {
                     foreach ($pair as $company => $value) {
                         // Hitung nilai sell
@@ -82,6 +87,7 @@ class AdminController extends Controller
                         // Simpan data ke dalam tabel ratios
                         Ratio::create([
                             'currency' => $currency,
+                            'type' => 'Pairs',
                             'transaction_api_id' => $transactionApiId,
                             'company' => $company,
                             'buy' => (float)$value,
@@ -90,6 +96,32 @@ class AdminController extends Controller
                     }
                 }
 
+                // save brokers
+                foreach ($data['brokers'] as $currency_brokers => $brokers) {
+                    foreach ($brokers as $company_brokers => $value_brokers) {
+                        // Hitung nilai sell
+                        
+                        if ($value_brokers > 100.00) {
+                            // Ambil dua digit pertama sebelum titik (.)
+                            $value_brokers = substr($value_brokers, 0, 2) . substr($value_brokers, strpos($value_brokers, '.'));
+                        }
+                
+                        // Hitung nilai sell
+                        $sell_brokers = 100 - (float)$value_brokers;
+                        
+                        // Simpan data ke dalam tabel ratios
+                        Ratio::create([
+                            'currency' => $currency_brokers,
+                            'type' => 'Brokers',
+                            'transaction_api_id' => $transactionApiId,
+                            'company' => $company_brokers,
+                            'buy' => (float)$value_brokers,
+                            'sell' => $sell_brokers,
+                        ]);
+                    }
+                }
+
+                 
                 return redirect()->back()->with('status', 'Ratios fetched and saved successfully');
             } else {
                 return redirect()->back()->with('error', 'Failed to fetch ratios from API');

@@ -15,6 +15,7 @@ class CreateRatiosTable extends Migration
         Schema::create('ratios', function (Blueprint $table) {
             $table->id();
             $table->integer('transaction_api_id');
+            $table->string('type');
             $table->string('currency');
             $table->string('company');
             $table->float('buy');
