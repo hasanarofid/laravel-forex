@@ -33,16 +33,32 @@ class AdminController extends Controller
         return view('admin.index');
     }
 
+
     public function getDatatable(Request $request)
     {
         if ($request->ajax()) {
-            $query = Ratio::select('ratios.*','transaction_api.last_update')
-                ->join('transaction_api', 'transaction_api.id', '=', 'ratios.transaction_api_id')
-                ->orderBy('transaction_api.last_update', 'DESC');
+            $query = Ratio::select('ratios.*')
+                // ->join('transaction_api', 'transaction_api.id', '=', 'ratios.transaction_api_id')
+                ->orderBy('updated_at', 'DESC');
+                if ($request->has('date_range')) {
+                    // Split the date_range into start and end date
+                    $dateRange = explode(' - ', $request->input('date_range'));
+                    $startDate = Carbon::parse($dateRange[0])->startOfDay();
+                    $endDate = Carbon::parse($dateRange[1])->endOfDay();
+        
+                    // Add where clause to filter data within the date range
+                    $query->whereBetween('updated_at', [$startDate, $endDate]);
+                }
+
     
             return Datatables::of($query)
+                ->addIndexColumn()
                 ->addColumn('last_update22', function ($row) {
-                    return Carbon::parse($row->last_update)->format('d-M-Y H:i:s');
+                    return Carbon::parse($row->updated_at)->format('d-M-Y H:i:s');
+                })
+                ->addColumn('action', function($row){
+                    $deleteButton = "<button class='btn btn-sm btn-danger deleteUser' data-id='".$row->id."'><i class='fa fa-solid fa-trash'></i></button>";
+                    return $deleteButton;
                 })
                 ->make(true);
         }
@@ -128,4 +144,35 @@ class AdminController extends Controller
             }
         }
 
+        // delete one row
+        function deleteData(Request $request){
+                 $id = $request->id;
+                //  dd($id);
+                // Lakukan penghapusan data di sini
+                // Misalnya, jika menggunakan Eloquent, Anda bisa melakukan seperti ini:
+                Ratio::destroy($id);
+                // Anda juga dapat menambahkan logika lainnya di sini
+                // Misalnya, mengirimkan pesan ke klien tentang keberhasilan atau kegagalan penghapusan
+                return response()->json(['success' => 1]);
+            
+        }
+
+        // delete all
+        function deleteSelected(Request $request){
+            $ids = $request->ids;
+            // dd($ids);
+            // Lakukan penghapusan data dengan beberapa ID di sini
+            // Misalnya, jika menggunakan Eloquent, Anda bisa melakukan seperti ini:
+            Ratio::whereIn('id', $ids)->delete();
+
+        //    $cek =  TransactionApi::where('transaction_api_id', $ids)->get();
+            // Anda juga dapat menambahkan logika lainnya di sini
+            // Misalnya, mengirimkan pesan ke klien tentang keberhasilan atau kegagalan penghapusan
+            return response()->json(['success' => 1]);
+        }
+
+
+
 }
+
+
