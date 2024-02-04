@@ -125,6 +125,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <!-- Include moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
 
 <!-- Include daterangepicker.js -->
 
@@ -133,9 +134,25 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script type="text/javascript">
 
-	$('.daterange').daterangepicker();
+
+
 
 $(document).ready(function() {
+    var startDate = moment().startOf('month');
+    var endDate = moment().endOf('month');
+
+    // Format tanggal sesuai dengan format yang diharapkan oleh daterangepicker
+    var startDateFormatted = startDate.format("MM/DD/YYYY");
+    var endDateFormatted = endDate.format("MM/DD/YYYY");
+
+    // Mengatur nilai default untuk input tanggal
+    $('.daterange').val(startDateFormatted + ' - ' + endDateFormatted);
+
+    // Inisialisasi daterangepicker dengan mengatur format tanggal yang diharapkan
+    $('.daterange').daterangepicker({
+        "dateFormat": "MM/DD/YYYY" // Sesuaikan format tanggal yang diharapkan di sini
+    });
+
     $('.check-all').prop('checked', false);
     // Initialize the daterangepicker
     // $('.daterange').daterangepicker();

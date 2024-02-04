@@ -41,6 +41,7 @@ class AdminController extends Controller
                 // ->join('transaction_api', 'transaction_api.id', '=', 'ratios.transaction_api_id')
                 ->orderBy('updated_at', 'DESC');
                 if ($request->has('date_range')) {
+                    // dd($request->input('date_range'));die;
                     // Split the date_range into start and end date
                     $dateRange = explode(' - ', $request->input('date_range'));
                     $startDate = Carbon::parse($dateRange[0])->startOfDay();
