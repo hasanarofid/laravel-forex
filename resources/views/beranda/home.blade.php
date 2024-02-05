@@ -133,9 +133,9 @@
                     <div class="col-9">
                       <div class="ratios">
                         <div class="average-line">&nbsp;</div>
-                        <div class="ratio-bar-left" style="width: {{ $item->buy }}%;">{{ $item->buy }}%</div>
-                        <div class="ratio-bar-divider" style="left: {{ $item->buy }}%;"></div>
-                        <div class="ratio-bar-right" style="width: {{ $item->sell }}%;">{{ $item->sell }}%</div>
+                        <div class="ratio-bar-left" style="width: {{ number_format($item->buy, 2, '.', '') }}%;">{{ number_format($item->buy, 2) }}%</div>
+                        <div class="ratio-bar-divider" style="left: {{ number_format($item->buy, 2, '.', '') }}%;"></div>
+                        <div class="ratio-bar-right" style="width: {{ number_format($item->sell, 2, '.', '') }}%;">{{ number_format($item->sell, 2) }}%</div>
                       </div>
                       <br>
                     </div>
