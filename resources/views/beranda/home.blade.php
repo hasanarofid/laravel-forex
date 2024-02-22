@@ -110,7 +110,7 @@
     <div class="relative flex items-top justify-center min-h-screen bg-gray-100 dark:bg-gray-900 sm:items-center py-4 sm:pt-0">
       <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
         <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
-          <h1>Forex Sentiment</h1>
+          <h3>Pairs</h3>
         </div>
         <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
           <div class="grid grid-cols-1 md:grid-cols-2">
@@ -145,7 +145,7 @@
                   </div> @endforeach
                 </div>
               </div>
-              <div class="col-md-4" style="background-color: blanchedalmond">
+              <div class="col-md-4" style="background-color: aliceblue">
                 <div class="group titled" id="thePairs" style="display: block;">
                   <div class="title">
                     <span>Last Update</span>
@@ -153,42 +153,90 @@
                       <p>{{ $lastUpdate }}</p>
                     </div>
                   </div>
-                  {{-- Grouping --}}
-                  <div class="title">
-                    <span>Grouping</span>
-                    <div class="tool-button-group">
-                      <div class="column-2"> @foreach ($grouping as $key=> $group) <div class="tool-button  @if($group == $default) active @endif" onclick="setGroup('{{ $group }}')">
-                          {{ $group }}
-                        </div> @endforeach </div>
-                    </div>
-                  </div>
-                  {{-- Pairs --}}
-                  <div class="title" id="title_pairs" style="display: {{ ($default == 'Pairs') ? 'block' : 'none' }}">
-                    <span>Currency Pairs</span>
-                  </div>
+                
                   <div class="tool-button-group" id="div_pairs" style="display: {{ ($default == 'Pairs') ? 'block' : 'none' }}">
-                    <div class="column-2">
-                      @foreach ($currency as $currencyItem)
-                      <div class="tool-button @if($currencyItem->currency == $cur) active @endif" onclick="setForex('{{ $currencyItem->currency }}')">
-                        {{ $currencyItem->currency }}
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        @foreach ($currency as $currencyItem)
+                        <a class="nav-link @if($currencyItem->currency == $cur) active @endif" id="v-pills-{{ $currencyItem->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $currencyItem->currency }}" role="tab" aria-controls="v-pills-{{ $currencyItem->currency }}" aria-selected="true" onclick="setForex('{{ $currencyItem->currency }}')">
+                            {{ $currencyItem->currency }}
+                        </a>
+                        @endforeach
+                    </div>
+                </div>
+
+                  
+
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {{-- brokers --}}
+      <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="flex justify-center pt-8 sm:justify-start sm:pt-0">
+          <h3>Brokers</h3>
+        </div>
+        <div class="mt-8 bg-white dark:bg-gray-800 overflow-hidden shadow sm:rounded-lg">
+          <div class="grid grid-cols-1 md:grid-cols-2">
+            <div class="row">
+              <div class="col-md-8">
+                <div class="container">
+                  <div class="row">
+                    <div class="col"></div>
+                    <div class="col-3" style="text-align:center;font-size: 12px;">BUY</div>
+                    <!-- Align "BUY" to the left -->
+                    <div class="col-3" style="text-align:center;font-size: 12px;">
+                      <span id="currency"></span>{{ $cur }}
+                      <i class="fa fa-bar-chart" aria-hidden="true"></i>
+                    </div>
+                    <div class="col-3" style="text-align:right;font-size: 12px;">SELL</div>
+                    <!-- Align "SELL" to the right -->
+                    <div class="col"></div>
+                  </div> @foreach ($ratios as $item) <div class="row">
+                    <div class="col">{{ $item->company }}</div>
+                    <div class="col-9">
+                      <div class="ratios">
+                        <div class="average-line">&nbsp;</div>
+                        <div class="ratio-bar-left" style="width: {{ number_format($item->buy, 2, '.', '') }}%;">{{ number_format($item->buy, 2) }}%</div>
+                        <div class="ratio-bar-divider" style="left: {{ number_format($item->buy, 2, '.', '') }}%;"></div>
+                        <div class="ratio-bar-right" style="width: {{ number_format($item->sell, 2, '.', '') }}%;">{{ number_format($item->sell, 2) }}%</div>
                       </div>
-                      @endforeach
+                      <br>
+                    </div>
+                    <div class="col">
+                      <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                    </div>
+                  </div> @endforeach
+                </div>
+              </div>
+              <div class="col-md-4" style="background-color: aliceblue">
+                <div class="group titled" id="thePairs" style="display: block;">
+                  <div class="title">
+                    <span>Last Update</span>
+                    <div>
+                      <p>{{ $lastUpdate }}</p>
                     </div>
                   </div>
+             
+             
 
                   {{-- Broker --}}
-                  <div class="title" id="title_broker" style="display: {{ ($default == 'Brokers') ? 'block' : 'none' }}">
+                  {{-- <div class="title" id="title_broker" style="display: {{ ($default == 'Brokers') ? 'block' : 'none' }}">
                     <span>Brokers</span>
-                  </div>
-                  <div class="tool-button-group" id="div_broker" style="display: {{ ($default == 'Brokers') ? 'block' : 'none' }}">
-                    <div class="column-2">
+                  </div> --}}
+                  <div class="tool-button-group" id="div_broker" >
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                       @foreach ($brokers as $broker)
-                      <div class="tool-button @if($broker->currency == $cur) active @endif" onclick="setBrokers('{{ $broker->currency }}')">
+                      <a class="nav-link @if($broker->currency == $cur) active @endif" id="v-pills-{{ $broker->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $broker->currency }}" role="tab" aria-controls="v-pills-{{ $broker->currency }}" aria-selected="true" onclick="setForex('{{ $broker->currency }}')">
                         {{ $broker->currency }}
-                      </div>
+                    </a>
                       @endforeach
                     </div>
-                  </div>
+                </div>
+                  
 
 
                 </div>
