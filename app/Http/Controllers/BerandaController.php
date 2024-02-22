@@ -11,49 +11,50 @@ use Carbon\Carbon;
 class BerandaController extends Controller
 {
     public function index(Request $request)
-    {
-       
-        $filter = $request->input('filter');
-        $type = $request->input('type');
-        // dd($filter);
-        $lastTransactionApi = TransactionApi::orderBy('last_update', 'desc')->first();
-        if(!empty($filter) || !empty($type) ){
-            $ratios = Ratio::where('currency',$filter)
-            ->where('type',$type)
-            ->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
-            $cur = $filter;
-        }else{
-            if(!empty($lastTransactionApi)){
-                $ratios = Ratio::where('currency','AUDJPY')
-                ->where('type','Pairs')->where('transaction_api_id',$lastTransactionApi->id)->latest('updated_at')->get();
-            }else{
-                $ratios = Ratio::where('currency','AUDJPY')
-                ->where('type','Pairs')->latest('updated_at')->get();
-            }
-            $cur = 'AUDJPY';
-        }
-        $lastUpdate = ($lastTransactionApi) ? Carbon::parse($lastTransactionApi->last_update)->diffForHumans() : null;
-        $currency = Ratio::select('currency')->where('type','Pairs')->groupBy('currency')->orderBy('currency')->get();
-        $brokers = Ratio::select('currency')->where('type','Brokers')->groupBy('currency')->orderBy('currency')->get();
+{
+    $filterCurrency = $request->input('filter_currency');
+    $filterBroker = $request->input('filter_broker');
+    $type = $request->input('type');
 
-        $grouping = [
-            'Pairs'=>'Pairs',
-            'Brokers'=>'Brokers',
-        ];
-        
-        $default = !empty($type)  ? $type  : 'Pairs';
-     
-              // Mengirimkan data ke view 'beranda.home' bersama dengan compact
-              return view('beranda.home',
-               compact('currency',
-               'ratios','cur',
-               'lastUpdate',
-                'brokers',
-                'grouping',
-                'default'
+    $lastTransactionApi = TransactionApi::orderBy('last_update', 'desc')->first();
 
-            ));
+    // Ambil data ratio untuk pasangan mata uang
+    $ratios = Ratio::where('transaction_api_id', optional($lastTransactionApi)->id)
+                    ->where('type', 'Pairs');
+
+    if ($filterCurrency) {
+        $ratios->where('currency', $filterCurrency);
+    } else {
+        $ratios->where('currency', 'AUDJPY');
     }
+
+    $ratios = $ratios->latest('updated_at')->get();
+
+    // Ambil data ratio untuk broker
+    $ratio_brokers = Ratio::where('transaction_api_id', optional($lastTransactionApi)->id)
+                            ->where('type', 'Brokers');
+
+    if ($filterBroker) {
+        $ratio_brokers->where('currency', $filterBroker);
+    } else {
+        $ratio_brokers->where('currency', 'amarkets');
+    }
+
+    $ratio_brokers = $ratio_brokers->latest('updated_at')->get();
+
+    $cur = $filterCurrency ?: 'AUDJPY';
+    $brok = $filterBroker ?: 'amarkets';
+
+    $lastUpdate = optional($lastTransactionApi)->last_update ? Carbon::parse($lastTransactionApi->last_update)->diffForHumans() : null;
+
+    $currency = Ratio::select('currency')->where('type','Pairs')->groupBy('currency')->orderBy('currency')->get();
+    $brokers = Ratio::select('currency')->where('type','Brokers')->groupBy('currency')->orderBy('currency')->get();
+
+
+    return view('beranda.home', compact('currency', 'ratios', 'cur', 'lastUpdate', 'brokers', 'brok', 'ratio_brokers'));
+}
+
+
 
     public function fetchAndSaveRatios()
     {

@@ -154,13 +154,15 @@
                     </div>
                   </div>
                 
-                  <div class="tool-button-group" id="div_pairs" style="display: {{ ($default == 'Pairs') ? 'block' : 'none' }}">
+                  <div class="tool-button-group" id="div_pairs" >
+                  
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                        @foreach ($currency as $currencyItem)
-                        <a class="nav-link @if($currencyItem->currency == $cur) active @endif" id="v-pills-{{ $currencyItem->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $currencyItem->currency }}" role="tab" aria-controls="v-pills-{{ $currencyItem->currency }}" aria-selected="true" onclick="setForex('{{ $currencyItem->currency }}')">
-                            {{ $currencyItem->currency }}
-                        </a>
-                        @endforeach
+                      @foreach ($currency as $currencyItem)
+                      <a class="nav-link @if($currencyItem->currency == $cur) active @endif" id="v-pills-{{ $currencyItem->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $currencyItem->currency }}" role="tab" aria-controls="v-pills-{{ $currencyItem->currency }}" aria-selected="true" onclick="setForex('{{ $currencyItem->currency }}')">
+                          {{ $currencyItem->currency }}
+                      </a>
+                  @endforeach
+                  
                     </div>
                 </div>
 
@@ -189,13 +191,13 @@
                     <div class="col-3" style="text-align:center;font-size: 12px;">BUY</div>
                     <!-- Align "BUY" to the left -->
                     <div class="col-3" style="text-align:center;font-size: 12px;">
-                      <span id="currency"></span>{{ $cur }}
+                      <span id="currency"></span>{{ $brok }}
                       <i class="fa fa-bar-chart" aria-hidden="true"></i>
                     </div>
                     <div class="col-3" style="text-align:right;font-size: 12px;">SELL</div>
                     <!-- Align "SELL" to the right -->
                     <div class="col"></div>
-                  </div> @foreach ($ratios as $item) <div class="row">
+                  </div> @foreach ($ratio_brokers as $item) <div class="row">
                     <div class="col">{{ $item->company }}</div>
                     <div class="col-9">
                       <div class="ratios">
@@ -230,10 +232,11 @@
                   <div class="tool-button-group" id="div_broker" >
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                       @foreach ($brokers as $broker)
-                      <a class="nav-link @if($broker->currency == $cur) active @endif" id="v-pills-{{ $broker->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $broker->currency }}" role="tab" aria-controls="v-pills-{{ $broker->currency }}" aria-selected="true" onclick="setForex('{{ $broker->currency }}')">
-                        {{ $broker->currency }}
-                    </a>
-                      @endforeach
+                      <a class="nav-link @if($broker->currency == $brok) active @endif" id="v-pills-{{ $broker->currency }}-tab" data-toggle="pill" href="#v-pills-{{ $broker->currency }}" role="tab" aria-controls="v-pills-{{ $broker->currency }}" aria-selected="true" onclick="setBrokers('{{ $broker->currency }}')">
+                          {{ $broker->currency }}
+                      </a>
+                  @endforeach
+                  
                     </div>
                 </div>
                   
@@ -250,42 +253,29 @@
   <script>
     
     function setForex(currency) {
-      var type = 'Pairs';
-      window.location.href = "{{ route('index') }}?filter=" + currency +"&type=" + type;
+    var type = 'Pairs';
+    window.location.href = "{{ route('index') }}?filter_currency=" + currency + "&type=" + type;
+}
+
+function setBrokers(currency) {
+    var type = 'Brokers';
+    window.location.href = "{{ route('index') }}?filter_broker=" + currency + "&type=" + type;
+}
+
+// Tambahkan fungsi untuk memuat ulang data saat filter berubah
+window.onload = function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var filterCurrency = urlParams.get('filter_currency');
+    var filterBroker = urlParams.get('filter_broker');
+    var type = urlParams.get('type');
+
+    // Tentukan tab yang aktif berdasarkan filter
+    if (type === 'Pairs') {
+        document.getElementById('v-pills-' + filterCurrency + '-tab').classList.add('active');
+    } else if (type === 'Brokers') {
+        document.getElementById('v-pills-' + filterBroker + '-tab').classList.add('active');
     }
-
-    
-
-    function setBrokers(currency) {
-      var type = 'Brokers';
-      window.location.href = "{{ route('index') }}?filter=" + currency +"&type=" + type;
-    }
-
-  function setGroup(group){
-
-     // Menghapus kelas aktif dari semua tombol di bagian 'Grouping'
-  document.querySelectorAll('.title .tool-button').forEach(function(button) {
-    button.classList.remove('active');
-  });
-
-  // Menambahkan kelas aktif pada tombol yang ditekan di bagian 'Grouping'
-  event.target.classList.add('active');
-
-
-    if (group === 'Pairs') {
-      setForex('AUDJPY');
-      document.getElementById('title_pairs').style.display = 'block';
-      document.getElementById('div_pairs').style.display = 'block';
-      document.getElementById('title_broker').style.display = 'none';
-      document.getElementById('div_broker').style.display = 'none';
-    } else if (group === 'Brokers') {
-      setBrokers('amarkets');
-      document.getElementById('title_pairs').style.display = 'none';
-      document.getElementById('div_pairs').style.display = 'none';
-      document.getElementById('title_broker').style.display = 'block';
-      document.getElementById('div_broker').style.display = 'block';
-    }
-    }
+};
 
   </script>
 </html>
